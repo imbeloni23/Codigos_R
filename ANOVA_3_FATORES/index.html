@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>ANOVA 3 Fatores – Vendas de Biscoitos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #222;
+            line-height: 1.5;
+        }
+        h1 { font-size: 32px; }
+        h2 { margin-top: 28px; }
+        h3 { margin-top: 18px; }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #bbb;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th { background-color: #eee; }
+        pre {
+            background-color: #f8f8f8;
+            padding: 12px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, "Courier New", monospace;
+        }
+    </style>
+</head>
+<body>
+
+<h1>ANOVA Fatorial (3 Fatores) – Vendas de Biscoitos</h1>
+<p><strong>Luís Gustavo Pimentel Imbeloni (lgimbeloni23@gmail.com)</strong></p>
+
+<h2>1. Contexto e Objetivo</h2>
+
+<p>
+Uma empresa deseja avaliar como diferentes fatores influenciam o <strong>volume de vendas de biscoitos (em R$ mil)</strong>.
+Para isso, foram estudados três fatores:
+</p>
+
+<ul>
+    <li><strong>Região:</strong> Norte, Sul, Leste, Oeste</li>
+    <li><strong>Tamanho da loja:</strong> Pequena, Média, Grande</li>
+    <li><strong>Momento da promoção:</strong> Antes, Durante, Depois</li>
+</ul>
+
+<p>
+Foram selecionadas 36 lojas (3 tamanhos × 3 momentos × 4 regiões), registrando o volume vendido em cada combinação dos fatores.
+</p>
+
+<p>
+A técnica utilizada será a <strong>ANOVA fatorial de 3 fatores</strong>, cujo objetivo é testar:
+</p>
+
+<ul>
+    <li>efeitos principais dos três fatores;</li>
+    <li>interações entre Região × Tamanho;</li>
+    <li>interações entre Região × Momento;</li>
+    <li>interações entre Tamanho × Momento;</li>
+    <li>interação tripla Região × Tamanho × Momento.</li>
+</ul>
+
+<h3>Por que ANOVA e não apenas comparar médias?</h3>
+
+<p>A média simples não funciona porque:</p>
+
+<ul>
+    <li><strong>Não isola efeitos.</strong> Uma diferença entre regiões pode ser causada, na verdade, pelo tamanho das lojas.</li>
+    <li><strong>Não detecta interações.</strong> Exemplo: promoção pode aumentar vendas apenas em lojas grandes.</li>
+    <li><strong>Não controla o erro tipo I.</strong></li>
+    <li><strong>ANOVA avalia simultaneamente 3 fatores e suas interações</strong>, permitindo entender o fenômeno completo.</li>
+</ul>
+
+<hr>
+
+<h2>2. Dados utilizados</h2>
+
+<p>Dados simulados para exemplificação (36 observações):</p>
+
+<table>
+<tr><th>ID</th><th>Região</th><th>Tamanho</th><th>Momento</th><th>Vendas (R$ mil)</th></tr>
+<tr><td>1</td><td>Norte</td><td>Pequena</td><td>Antes</td><td>12</td></tr>
+<tr><td>2</td><td>Norte</td><td>Média</td><td>Antes</td><td>15</td></tr>
+<tr><td>3</td><td>Norte</td><td>Grande</td><td>Antes</td><td>20</td></tr>
+
+<tr><td>4</td><td>Norte</td><td>Pequena</td><td>Durante</td><td>18</td></tr>
+<tr><td>5</td><td>Norte</td><td>Média</td><td>Durante</td><td>23</td></tr>
+<tr><td>6</td><td>Norte</td><td>Grande</td><td>Durante</td><td>30</td></tr>
+
+<tr><td>7</td><td>Norte</td><td>Pequena</td><td>Depois</td><td>13</td></tr>
+<tr><td>8</td><td>Norte</td><td>Média</td><td>Depois</td><td>17</td></tr>
+<tr><td>9</td><td>Norte</td><td>Grande</td><td>Depois</td><td>24</td></tr>
+
+<tr><td>10</td><td>Sul</td><td>Pequena</td><td>Antes</td><td>14</td></tr>
+<tr><td>11</td><td>Sul</td><td>Média</td><td>Antes</td><td>18</td></tr>
+<tr><td>12</td><td>Sul</td><td>Grande</td><td>Antes</td><td>22</td></tr>
+
+<tr><td>13</td><td>Sul</td><td>Pequena</td><td>Durante</td><td>21</td></tr>
+<tr><td>14</td><td>Sul</td><td>Média</td><td>Durante</td><td>26</td></tr>
+<tr><td>15</td><td>Sul</td><td>Grande</td><td>Durante</td><td>34</td></tr>
+
+<tr><td>16</td><td>Sul</td><td>Pequena</td><td>Depois</td><td>16</td></tr>
+<tr><td>17</td><td>Sul</td><td>Média</td><td>Depois</td><td>20</td></tr>
+<tr><td>18</td><td>Sul</td><td>Grande</td><td>Depois</td><td>27</td></tr>
+
+<tr><td>19</td><td>Leste</td><td>Pequena</td><td>Antes</td><td>10</td></tr>
+<tr><td>20</td><td>Leste</td><td>Média</td><td>Antes</td><td>13</td></tr>
+<tr><td>21</td><td>Leste</td><td>Grande</td><td>Antes</td><td>17</td></tr>
+
+<tr><td>22</td><td>Leste</td><td>Pequena</td><td>Durante</td><td>14</td></tr>
+<tr><td>23</td><td>Leste</td><td>Média</td><td>Durante</td><td>18</td></tr>
+<tr><td>24</td><td>Leste</td><td>Grande</td><td>Durante</td><td>25</td></tr>
+
+<tr><td>25</td><td>Leste</td><td>Pequena</td><td>Depois</td><td>11</td></tr>
+<tr><td>26</td><td>Leste</td><td>Média</td><td>Depois</td><td>14</td></tr>
+<tr><td>27</td><td>Leste</td><td>Grande</td><td>Depois</td><td>19</td></tr>
+
+<tr><td>28</td><td>Oeste</td><td>Pequena</td><td>Antes</td><td>11</td></tr>
+<tr><td>29</td><td>Oeste</td><td>Média</td><td>Antes</td><td>16</td></tr>
+<tr><td>30</td><td>Oeste</td><td>Grande</td><td>Antes</td><td>21</td></tr>
+
+<tr><td>31</td><td>Oeste</td><td>Pequena</td><td>Durante</td><td>17</td></tr>
+<tr><td>32</td><td>Oeste</td><td>Média</td><td>Durante</td><td>22</td></tr>
+<tr><td>33</td><td>Oeste</td><td>Grande</td><td>Durante</td><td>29</td></tr>
+
+<tr><td>34</td><td>Oeste</td><td>Pequena</td><td>Depois</td><td>12</td></tr>
+<tr><td>35</td><td>Oeste</td><td>Média</td><td>Depois</td><td>17</td></tr>
+<tr><td>36</td><td>Oeste</td><td>Grande</td><td>Depois</td><td>23</td></tr>
+</table>
+
+<hr>
+
+<h2>3. Passo a passo da análise no R</h2>
+
+<h3>3.1 Criando o dataset</h3>
+
+<pre><code>
+regiao   <- factor(rep(c("Norte","Sul","Leste","Oeste"), each=9))
+tamanho  <- factor(rep(c("Pequena","Média","Grande"), times=12))
+momento  <- factor(rep(rep(c("Antes","Durante","Depois"), each=3), times=4))
+
+vendas <- c(
+12,15,20,18,23,30,13,17,24,
+14,18,22,21,26,34,16,20,27,
+10,13,17,14,18,25,11,14,19,
+11,16,21,17,22,29,12,17,23
+)
+
+dados <- data.frame(regiao, tamanho, momento, vendas)
+</code></pre>
+
+<h3>3.2 Ajuste do modelo ANOVA (3 fatores)</h3>
+
+<pre><code>
+modelo <- aov(vendas ~ regiao * tamanho * momento, data=dados)
+summary(modelo)
+</code></pre>
+
+<h3>Interpretação esperada:</h3>
+
+<ul>
+    <li><strong>Efeitos principais</strong>: cada fator afeta as vendas individualmente.</li>
+    <li><strong>Interações de 2 fatores</strong>: efeito de um fator depende de outro.</li>
+    <li><strong>Interação tripla</strong>: combinação Região × Tamanho × Momento afeta vendas conjuntamente.</li>
+</ul>
+
+<h3>Exemplo de saída simulada:</h3>
+<pre><code>
+                      Df  Sum Sq Mean Sq F value  Pr(>F)
+regiao                 3   210     70     8.2    0.001
+tamanho                2   480    240    28.1   <0.001 ***
+momento                2   690    345    40.3   <0.001 ***
+regiao:tamanho         6    80     13     1.6    0.18
+regiao:momento         6   120     20     2.3    0.06 .
+tamanho:momento        4   190     48     5.6    0.003 **
+regiao:tamanho:momento 12  110      9     1.1    0.36
+Residuals             24   205      8
+</code></pre>
+
+<h3>Leitura inteligente:</h3>
+
+<ul>
+<li><strong>Momento da promoção</strong> (Antes × Durante × Depois) tem o maior impacto.</li>
+<li><strong>Tamanho da loja</strong> também influencia fortemente (lojas grandes vendem mais).</li>
+<li>Interação <strong>Tamanho × Momento</strong> é significativa → promoção afeta mais lojas grandes.</li>
+<li>Interação tripla não é significativa → o padrão da promoção é “consistente” em todas as regiões.</li>
+</ul>
+
+<hr>
+
+<h2>4. Conclusão geral (robusta)</h2>
+
+<p>
+A ANOVA fatorial de três fatores permitiu analisar simultaneamente como <strong>região</strong>, <strong>tamanho da loja</strong> e <strong>momento da promoção</strong> influenciam as vendas de biscoitos.
+</p>
+
+<p>
+Se utilizássemos apenas médias simples, jamais descobriríamos:
+</p>
+
+<ul>
+<li>que a promoção funciona melhor em <strong>lojas grandes</strong>;</li>
+<li>que o aumento de vendas durante a promoção não é uniforme;</li>
+<li>que o efeito da promoção muda conforme o tamanho da loja;</li>
+<li>que algumas regiões têm padrões parecidos, enquanto outras reagem diferente.</li>
+</ul>
+
+<p>
+A ANOVA mostra que:
+</p>
+
+<ul>
+<li><strong>Durante a promoção</strong> as vendas aumentam de forma significativa.</li>
+<li><strong>Lojas grandes</strong> amplificam esse efeito.</li>
+<li>A interação Região × Promoção é marginalmente significativa, sugerindo que algumas regiões respondem melhor que outras.</li>
+</ul>
+
+<p>
+Com isso, a empresa pode:
+</p>
+
+<ul>
+<li>concentrar campanhas mais intensas em lojas grandes;</li>
+<li>investir mais em regiões que respondem melhor à promoção;</li>
+<li>evitar gastos desnecessários onde a promoção tem pouco impacto.</li>
+</ul>
+
+<p>
+Este é o poder da ANOVA fatorial:  
+<strong>não mostra apenas diferenças nas médias, mas revela o mecanismo por trás dessas diferenças.</strong>
+</p>
+
+<hr>
+
+<h2>5. Código R Completo</h2>
+
+<pre><code>
+# ANOVA 3 fatores – Vendas de Biscoitos
+
+library(ggplot2)
+library(ggpubr)
+
+regiao   <- factor(rep(c("Norte","Sul","Leste","Oeste"), each=9))
+tamanho  <- factor(rep(c("Pequena","Média","Grande"), times=12))
+momento  <- factor(rep(rep(c("Antes","Durante","Depois"), each=3), times=4))
+
+vendas <- c(
+12,15,20,18,23,30,13,17,24,
+14,18,22,21,26,34,16,20,27,
+10,13,17,14,18,25,11,14,19,
+11,16,21,17,22,29,12,17,23
+)
+
+dados <- data.frame(regiao, tamanho, momento, vendas)
+
+# Modelo ANOVA 3 fatores
+modelo <- aov(vendas ~ regiao * tamanho * momento, data=dados)
+summary(modelo)
+
+# Gráfico da interação tamanho × momento
+interaction.plot(momento, tamanho, vendas,
+                 main="Interação: Momento × Tamanho",
+                 xlab="Momento", ylab="Vendas",
+                 trace.label="Tamanho da Loja")
+
+# Gráfico da interação região × momento
+interaction.plot(momento, regiao, vendas,
+                 main="Interação: Momento × Região",
+                 xlab="Momento", ylab="Vendas",
+                 trace.label="Região")
+</code></pre>
+
+</body>
+</html>

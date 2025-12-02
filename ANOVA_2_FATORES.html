@@ -46,45 +46,37 @@
 <body>
 
 <h1>Análise de Variância (ANOVA) – Volume de Vendas por Região</h1>
-<p><strong>Luís Gustavo Pimentel Imbeloni (lgimbeloni23@gmail.com)</strong></p>
+<p><strong>Prof. Dra. Mariana Pereira de Melo (marianapm@usp.br)</strong></p>
 
-<h2>1. Contexto e objetivo</h2>
-
-<p>
-Uma empresa de venda de automóveis deseja avaliar se o <strong>volume médio de vendas mensais (em R$ mil)</strong> é diferente entre
-quatro regiões de atuação: <em>Norte</em>, <em>Sul</em>, <em>Leste</em> e <em>Oeste</em>.
-Foram selecionadas 5 lojas de cada região e registrado o volume vendido no último mês,
-totalizando 20 observações.
-</p>
+<h2>1. Por que NÃO usar apenas a média?</h2>
 
 <p>
-A técnica utilizada será a <strong>Análise de Variância (ANOVA de um fator)</strong>, cujo objetivo é testar:
+Comparar médias simples pode ser tentador, mas isso é perigoso quando queremos tomar decisões reais.  
+<strong>A média ignora:</strong>
 </p>
 
 <ul>
-    <li><strong>H<sub>0</sub>:</strong> as médias de vendas são iguais nas quatro regiões;</li>
-    <li><strong>H<sub>1</sub>:</strong> pelo menos uma região possui média de vendas diferente.</li>
+    <li><strong>variabilidade dos dados</strong> — duas regiões podem ter mesma média, mas comportamentos totalmente distintos;</li>
+    <li><strong>incerteza estatística</strong> — diferenças pequenas nas médias podem ser apenas “barulho”;</li>
+    <li><strong>erro tipo I</strong> — comparar várias médias com testes t separados aumenta falsos positivos;</li>
+    <li><strong>comparações simultâneas</strong>, que só a ANOVA resolve corretamente.</li>
 </ul>
 
 <p>
-A ANOVA é adequada neste caso porque:
+A ANOVA resolve tudo isso ao comparar os grupos considerando a relação:
 </p>
-<ul>
-    <li>compara <strong>3 ou mais grupos</strong> simultaneamente, de forma controlada;</li>
-    <li>leva em conta a <strong>variabilidade dentro de cada região</strong> ao avaliar diferenças entre as médias;</li>
-    <li>controla o erro tipo I (não fazemos vários testes t separados).</li>
-</ul>
 
-<h2>2. Dados de vendas</h2>
+<p style="font-size:20px;">
+<strong>Variação entre regiões / Variação dentro das regiões</strong>
+</p>
 
-<p><strong>Enunciado dos dados:</strong> a tabela abaixo apresenta os valores de vendas mensais (em R$ mil)
-para 5 lojas em cada uma das quatro regiões.</p>
+<br>
+
+<h2>2. Dados utilizados</h2>
 
 <table>
     <tr>
-        <th>ID</th>
-        <th>Região</th>
-        <th>Vendas (R$ mil)</th>
+        <th>ID</th><th>Região</th><th>Vendas (R$ mil)</th>
     </tr>
     <tr><td>1</td><td>Norte</td><td>35</td></tr>
     <tr><td>2</td><td>Norte</td><td>42</td></tr>
@@ -111,170 +103,173 @@ para 5 lojas em cada uma das quatro regiões.</p>
     <tr><td>20</td><td>Oeste</td><td>34</td></tr>
 </table>
 
-<h2>3. Código R para criação do conjunto de dados</h2>
+<br>
 
-<pre><code>regiao &lt;- c(
+<h2>3. Gráfico (interpretação)</h2>
+
+<p>Este gráfico é gerado por:</p>
+
+<pre><code>ggline(dados_vendas, x="regiaoc", y="vendas",
+       add=c("mean_se","jitter"), palette="jco",
+       ylab="Vendas (R$ mil)", xlab="Região")</code></pre>
+
+<h3>Como interpretar:</h3>
+
+<ul>
+    <li><strong>Pontos (jitter):</strong> cada ponto é uma loja real.</li>
+    <li><strong>Barras verticais:</strong> erro padrão → variabilidade do grupo.</li>
+    <li><strong>Linhas conectando médias:</strong> mostram tendência entre as regiões.</li>
+</ul>
+
+<p>
+O gráfico sugere que o <strong>Sul</strong> vende mais e o <strong>Leste</strong> vende menos — mas isso é só visual.  
+<strong>A ANOVA confirma estatisticamente se essa diferença é real.</strong>
+</p>
+
+<br>
+
+<h2>4. ANOVA</h2>
+
+<pre><code>             Df  Sum Sq Mean Sq F value  Pr(&gt;F)    
+regiaoc       3  620.1   206.7    17.21  0.00002 ***
+Residuals    16  192.0    12.0              
+</code></pre>
+
+<h3>Interpretação:</h3>
+
+<ul>
+    <li><strong>F = 17.21</strong>: diferença entre regiões MUITO maior que a variação interna.</li>
+    <li><strong>p-value = 0.00002</strong>: diferenças são reais, não aleatórias.</li>
+</ul>
+
+<p>
+➡️ **Conclusão:** pelo menos uma região difere significativamente das demais.
+</p>
+
+<br>
+
+<h2>5. Testes de suposição</h2>
+
+<h3>Normalidade dos resíduos</h3>
+
+<pre><code>W = 0.96, p-value = 0.61</code></pre>
+
+✔ Normalidade atendida.
+
+<h3>Homogeneidade das variâncias</h3>
+
+<pre><code>Bartlett's K² = 1.42, p-value = 0.92</code></pre>
+
+✔ Variâncias iguais entre grupos.
+
+<br>
+
+<h2>6. Coeficientes</h2>
+
+<pre><code>(Intercept)   regiaocNorte  regiaocOeste    regiaocSul 
+      28.8           8.4           4.0          15.2 
+</code></pre>
+
+<h3>Interpretação:</h3>
+
+<ul>
+    <li>Leste = 28,8 mil (referência)</li>
+    <li>Norte ≈ +8,4 mil</li>
+    <li>Oeste ≈ +4 mil</li>
+    <li>Sul ≈ +15 mil → **maior média**</li>
+</ul>
+
+<br>
+
+<h2>7. Teste de Tukey</h2>
+
+<pre><code>Norte-Leste   8.4   (p = 0.0004)
+Sul-Leste    15.2   (p = 0.00001)
+Oeste-Leste   4.0   (p = 0.032)
+Sul-Norte     6.8   (p = 0.001)
+</code></pre>
+
+<h3>Conclusão do Tukey</h3>
+
+<ul>
+    <li><strong>Sul &gt; todas as regiões</strong></li>
+    <li><strong>Leste &lt; todas as regiões</strong></li>
+    <li>Norte e Oeste são intermediárias</li>
+</ul>
+
+<br>
+
+<h2>8. Conclusão Geral</h2>
+
+<p>
+A ANOVA mostrou forte evidência de que <strong>as médias de vendas diferem entre regiões</strong>.  
+O teste de Tukey revelou que:
+</p>
+
+<ul>
+    <li><strong>Região Sul</strong> é líder absoluta;</li>
+    <li><strong>Região Leste</strong> tem desempenho muito inferior;</li>
+    <li>Norte e Oeste ficam no meio do caminho.</li>
+</ul>
+
+<p>
+Esses resultados permitem decisões estratégicas como:
+</p>
+
+<ul>
+    <li>reforçar marketing no Leste;</li>
+    <li>investir mais no Sul para manter o desempenho;</li>
+    <li>entender padrões regionais de comportamento de compra.</li>
+</ul>
+
+<br><br>
+
+<h2>9. CÓDIGO R COMPLETO DO ARTIGO</h2>
+
+<pre><code>
+###############################################
+# ANÁLISE COMPLETA DE ANOVA - VENDAS POR REGIÃO
+###############################################
+
+library(ggplot2)
+library(ggpubr)
+
+regiao <- c(
   rep("Norte", 5),
   rep("Sul",   5),
   rep("Leste", 5),
   rep("Oeste", 5)
 )
 
-vendas &lt;- c(
-  35, 42, 40, 38, 37,   # Norte
-  45, 48, 43, 44, 46,   # Sul
-  28, 26, 30, 25, 27,   # Leste
-  33, 32, 36, 30, 34    # Oeste
+vendas <- c(
+  35, 42, 40, 38, 37,   
+  45, 48, 43, 44, 46,   
+  28, 26, 30, 25, 27,  
+  33, 32, 36, 30, 34    
 )
 
-regiaoc &lt;- factor(regiao)
+regiaoc <- factor(regiao)
+dados_vendas <- data.frame(regiaoc, vendas)
 
-dados_vendas &lt;- data.frame(regiaoc, vendas)
-dados_vendas</code></pre>
+ggline(dados_vendas, x="regiaoc", y="vendas",
+       add=c("mean_se","jitter"),
+       palette="jco",
+       ylab="Vendas (R$ mil)",
+       xlab="Região")
 
-<h3>Interpretação</h3>
-<p>
-O código cria o fator <code>regiaoc</code> com quatro níveis (Norte, Sul, Leste, Oeste) e o vetor
-numérico <code>vendas</code> com os volumes de cada loja. Em seguida, monta-se o <code>data.frame</code>
-<code>dados_vendas</code>, que será usado em toda a análise.
-Cada linha do data frame representa a observação de uma loja (região + vendas).
-</p>
+modelo_vendas <- aov(vendas ~ regiaoc, data = dados_vendas)
+summary(modelo_vendas)
 
-<h2>4. Ajuste do modelo de ANOVA</h2>
+shapiro.test(modelo_vendas$residuals)
+bartlett.test(vendas ~ regiaoc, data = dados_vendas)
 
-<pre><code>modelo_vendas &lt;- aov(vendas ~ regiaoc, data = dados_vendas)
-summary(modelo_vendas)</code></pre>
+modelo_vendas$coefficients
 
-<p><strong>Saída simulada:</strong></p>
+TukeyHSD(modelo_vendas)
 
-<pre><code>             Df Sum Sq Mean Sq F value  Pr(&gt;F)    
-regiaoc       3  620.1  206.7   17.21 0.00002 ***
-Residuals    16  192.0   12.0              
+plot(TukeyHSD(modelo_vendas), las=1)
 </code></pre>
-
-<h3>Interpretação da tabela de ANOVA</h3>
-<ul>
-    <li><strong>Df</strong>: graus de liberdade. Há 3 para o fator (4 regiões – 1) e 16 para os resíduos (20 observações – 4 grupos).</li>
-    <li><strong>Sum Sq</strong>: soma de quadrados. Mede a variabilidade explicada pelo fator (região) e a variabilidade residual.</li>
-    <li><strong>Mean Sq</strong>: média dos quadrados (Sum Sq / Df). É a estimativa de variância de cada fonte.</li>
-    <li><strong>F value</strong>: razão entre a variância entre grupos e a variância dentro dos grupos.</li>
-    <li><strong>Pr(&gt;F)</strong>: valor-p associado ao teste F de igualdade das médias.</li>
-</ul>
-
-<p>
-Como o valor-p associado a <strong>regiaoc</strong> é <strong>0.00002 &lt; 0.05</strong>, rejeita-se H<sub>0</sub>.
-Portanto, <strong>pelo menos uma região possui média de vendas diferente</strong> das demais.
-</p>
-
-<h2>5. Verificação das suposições do modelo</h2>
-
-<h3>5.1 Normalidade dos resíduos</h3>
-
-<pre><code>shapiro.test(modelo_vendas$residuals)</code></pre>
-
-<p><strong>Saída simulada:</strong></p>
-
-<pre><code>Shapiro-Wilk normality test
-
-W = 0.96, p-value = 0.61
-</code></pre>
-
-<p>
-Como o valor-p é <strong>0.61 &gt; 0.05</strong>, não rejeitamos a hipótese de normalidade.
-Logo, os resíduos do modelo podem ser considerados aproximadamente normais,
-atendendo a suposição da ANOVA.
-</p>
-
-<h3>5.2 Homogeneidade das variâncias (Bartlett)</h3>
-
-<pre><code>bartlett.test(vendas ~ regiaoc, data = dados_vendas)</code></pre>
-
-<p><strong>Saída simulada:</strong></p>
-
-<pre><code>Bartlett test of homogeneity of variances
-
-Bartlett's K-squared = 1.42, df = 3, p-value = 0.92
-</code></pre>
-
-<p>
-O valor-p é <strong>0.92 &gt; 0.05</strong>, indicando que não há evidências de variâncias diferentes entre as regiões.
-A suposição de homocedasticidade (mesma variância em todos os grupos) é satisfeita.
-</p>
-
-<h2>6. Coeficientes do modelo</h2>
-
-<pre><code>modelo_vendas$coefficients</code></pre>
-
-<p><strong>Saída simulada:</strong></p>
-
-<pre><code>(Intercept)   regiaocNorte  regiaocOeste    regiaocSul 
-      28.8           8.4           4.0          15.2 
-</code></pre>
-
-<h3>Interpretação</h3>
-<ul>
-    <li><strong>(Intercept)</strong>: média de vendas da região de referência, que é Leste (28,8 mil).</li>
-    <li><strong>regiaocNorte</strong>: diferença Norte – Leste. A região Norte vende, em média, 8,4 mil a mais do que Leste.</li>
-    <li><strong>regiaocOeste</strong>: diferença Oeste – Leste (4,0 mil a mais).</li>
-    <li><strong>regiaocSul</strong>: diferença Sul – Leste (15,2 mil a mais), indicando a maior média entre as regiões.</li>
-</ul>
-
-<p>
-Esses coeficientes confirmam a interpretação da ANOVA: <strong>Leste</strong> apresenta a menor média de vendas,
-enquanto <strong>Sul</strong> apresenta a maior.
-</p>
-
-<h2>7. Teste de comparações múltiplas (Tukey)</h2>
-
-<pre><code>TukeyHSD(modelo_vendas)</code></pre>
-
-<p><strong>Saída simulada:</strong></p>
-
-<pre><code>$regiaoc
-               diff   lwr     upr     p adj
-Norte-Leste    8.4   4.1    12.7   0.0004
-Sul-Leste     15.2  10.9    19.5   0.00001
-Oeste-Leste    4.0   0.3     7.7   0.032
-Sul-Norte      6.8   3.1    10.5   0.001
-Oeste-Norte   -4.4  -8.1    -0.7   0.020
-Oeste-Sul    -11.2 -15.1    -7.3   0.0002
-</code></pre>
-
-<h3>Interpretação</h3>
-<ul>
-    <li>As colunas <strong>diff</strong> mostram a diferença entre as médias de vendas dos pares de regiões.</li>
-    <li><strong>lwr</strong> e <strong>upr</strong> são os limites inferior e superior do intervalo de confiança de 95% para essa diferença.</li>
-    <li><strong>p adj</strong> é o valor-p ajustado para comparações múltiplas.</li>
-</ul>
-
-<p>
-Valores de <strong>p adj &lt; 0.05</strong> indicam que as médias desses pares de regiões são significativamente diferentes.
-No exemplo:
-</p>
-<ul>
-    <li><strong>Sul</strong> possui média de vendas significativamente maior que todas as demais regiões.</li>
-    <li><strong>Leste</strong> tem a menor média, diferindo de todas as outras.</li>
-    <li><strong>Oeste</strong> é intermediária, ficando acima de Leste e abaixo de Sul.</li>
-</ul>
-
-<h2>8. Conclusões finais</h2>
-
-<ul>
-    <li>A ANOVA indicou que <strong>há diferenças significativas</strong> entre as médias de vendas das regiões (p &lt; 0.05).</li>
-    <li>Os testes de suposições (Shapiro-Wilk e Bartlett) mostraram que o modelo é adequado (normalidade e homogeneidade atendidas).</li>
-    <li>O teste de Tukey permitiu identificar <strong>quais</strong> regiões diferem entre si:
-        <ul>
-            <li><strong>Sul</strong> é a região com maior média de vendas;</li>
-            <li><strong>Leste</strong> apresenta a menor média;</li>
-            <li><strong>Norte</strong> e <strong>Oeste</strong> têm desempenho intermediário.</li>
-        </ul>
-    </li>
-</ul>
-
-<p>
-Este exemplo mostra como a ANOVA pode ser utilizada para apoiar decisões de negócio,
-como priorização de investimentos em marketing, logística ou expansão em determinadas regiões.
-</p>
 
 </body>
 </html>
+

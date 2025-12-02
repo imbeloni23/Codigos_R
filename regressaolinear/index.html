@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Regressão Linear Múltipla – Comportamento das vendas analisando preço do produto e investimento em Marketing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #222;
+            line-height: 1.5;
+        }
+        h1 { font-size: 36px; }
+        h2 { margin-top: 28px; }
+        table {
+            border-collapse: collapse;
+            width: 70%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #bbb;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th { background-color: #eee; }
+        pre {
+            background-color: #f8f8f8;
+            padding: 12px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, "Courier New", monospace;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Regressão Linear Múltipla</h1>
+<p><strong>Luís Gustavo Pimentel Imbeloni (lgimbeloni23@gmail.com)</strong></p>
+
+<h2>Previsão de Vendas Baseada em Preço e Investimento em Marketing</h2>
+
+<p>
+Uma empresa de varejo deseja prever o volume mensal de vendas (em unidades) a partir de dois fatores:
+</p>
+
+<ul>
+<li><strong>Preço</strong> do produto (em R$)</li>
+<li><strong>Investimento em Marketing</strong> (em R$ mil)</li>
+</ul>
+
+<p>
+O objetivo do estudo é ajustar um modelo de regressão linear múltipla para identificar:
+</p>
+
+<ul>
+<li>Como o preço impacta as vendas;</li>
+<li>Como o marketing influencia as vendas;</li>
+<li>Qual variável é mais importante;</li>
+<li>Se o modelo é capaz de prever vendas futuras.</li>
+</ul>
+
+<h2>Por que usar Regressão e não Média Simples?</h2>
+
+<p>Comparar médias isoladas (ex.: média de vendas por nível de preço) não permite:</p>
+
+<ul>
+<li>Separar efeitos (preço e marketing atuam simultaneamente);</li>
+<li>Controlar a influência de uma variável enquanto analisa a outra;</li>
+<li>Medir o impacto marginal de cada variável;</li>
+<li>Realizar previsões quantitativas do tipo “quanto aumenta se…”;</li>
+<li>Avaliar significância estatística das variáveis.</li>
+</ul>
+
+<p>
+A regressão múltipla resolve isso ao modelar a relação linear:
+</p>
+
+<p style="font-size:18px; font-weight:bold;">
+Vendas = β0 + β1·Preço + β2·Marketing
+</p>
+
+<hr>
+
+<h2>Dados Utilizados</h2>
+
+<p>Os dados abaixo representam vendas mensais simuladas para 12 observações:</p>
+
+<table>
+<tr>
+<th>ID</th><th>Preço (R$)</th><th>Marketing (R$ mil)</th><th>Vendas</th>
+</tr>
+<tr><td>1</td><td>12</td><td>10</td><td>140</td></tr>
+<tr><td>2</td><td>15</td><td>20</td><td>170</td></tr>
+<tr><td>3</td><td>18</td><td>15</td><td>150</td></tr>
+<tr><td>4</td><td>25</td><td>30</td><td>175</td></tr>
+<tr><td>5</td><td>30</td><td>35</td><td>182</td></tr>
+<tr><td>6</td><td>40</td><td>50</td><td>205</td></tr>
+<tr><td>7</td><td>45</td><td>45</td><td>190</td></tr>
+<tr><td>8</td><td>33</td><td>25</td><td>160</td></tr>
+<tr><td>9</td><td>28</td><td>22</td><td>155</td></tr>
+<tr><td>10</td><td>20</td><td>40</td><td>185</td></tr>
+<tr><td>11</td><td>14</td><td>12</td><td>145</td></tr>
+<tr><td>12</td><td>38</td><td>48</td><td>200</td></tr>
+</table>
+
+<hr>
+
+<h2>Ajuste do Modelo no R</h2>
+
+<pre><code>
+modelo <- lm(vendas ~ preco + marketing, data=dados)
+summary(modelo)
+</code></pre>
+
+<h3>Saída Simulada (Interpretada)</h3>
+
+<pre><code>
+Coefficients:
+              Estimate Std.Error t value Pr(>|t|)
+(Intercept)   118.32     6.41     18.45   <0.001 ***
+preco          -2.38     0.20    -11.90   <0.001 ***
+marketing       3.10     0.15     20.60   <0.001 ***
+</code></pre>
+
+<h3>Interpretação</h3>
+
+<ul>
+<li><strong>Intercepto (118.32):</strong> vendas estimadas quando preço = 0 e marketing = 0 (valor estrutural).</li>
+
+<li><strong>Preço (–2.38):</strong> cada R$ 1 de aumento no preço reduz as vendas em 2,38 unidades, mantido marketing constante.</li>
+
+<li><strong>Marketing (+3.10):</strong> cada R$ 1 mil investido aumenta as vendas em 3,10 unidades.</li>
+
+<li><strong>Ambos p-valores &lt; 0.001:</strong> preço e marketing influenciam fortemente as vendas.</li>
+</ul>
+
+<hr>
+
+<h2>Avaliação do Ajuste</h2>
+
+<pre><code>
+summary(modelo)$r.squared
+</code></pre>
+
+<p><strong>Saída simulada:</strong></p>
+
+<pre><code>
+R-squared: 0.94
+</code></pre>
+
+<p>O modelo explica cerca de <strong>94% da variação das vendas</strong>, indicando excelente ajuste.</p>
+
+<hr>
+
+<h2>Previsões</h2>
+
+<pre><code>
+novos <- data.frame(
+    preco = c(20, 30, 40),
+    marketing = c(10, 20, 30)
+)
+predict(modelo, novos)
+</code></pre>
+
+<p><strong>Saída simulada:</strong></p>
+
+<pre><code>
+145.1
+162.5
+179.2
+</code></pre>
+
+<hr>
+
+<h2>Conclusão</h2>
+
+<p>
+A regressão múltipla mostrou que:
+</p>
+
+<ul>
+<li>Marketing e preço são fortemente relacionados às vendas;</li>
+<li>Marketing tem efeito positivo mais forte que o efeito negativo do preço;</li>
+<li>O modelo tem excelente ajuste (R² = 0.94);</li>
+<li>Permite prever vendas futuras de forma quantitativa.</li>
+</ul>
+
+<p>
+Enquanto a <strong>média simples</strong> compara grupos isolados, a regressão:
+</p>
+
+<ul>
+<li>controla efeitos simultâneos;</li>
+<li>mede impacto marginal de cada variável;</li>
+<li>produz previsões numéricas concretas;</li>
+<li>é superior para tomada de decisão empresarial.</li>
+</ul>
+
+<hr>
+
+<h2>Código Completo em R</h2>
+
+<pre><code>
+set.seed(123)
+
+n <- 40
+
+preco <- runif(n, 10, 50)
+marketing <- runif(n, 5, 50)
+vendas <- 120 - 2.5*preco + 3.2*marketing + rnorm(n, 0, 10)
+
+dados <- data.frame(preco, marketing, vendas)
+
+modelo <- lm(vendas ~ preco + marketing, data=dados)
+summary(modelo)
+
+novos <- data.frame(
+    preco = c(20, 30, 40),
+    marketing = c(10, 20, 30)
+)
+
+predict(modelo, novos)
+</code></pre>
+
+</body>
+</html>

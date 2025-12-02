@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Regressão Linear Múltipla – Previsão de Vendas Baseada em Preço do Produto e Investimento em Marketing</title>
+    <title>Regressão Linear Múltipla – Previsão de Vendas Baseada em Preço do Produto e Investimento em Marketing/title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,8 +46,8 @@ Uma empresa de varejo deseja prever o volume mensal de vendas (em unidades) a pa
 </p>
 
 <ul>
-<li><strong>Preço</strong> do produto (em R$)</li>
-<li><strong>Investimento em Marketing</strong> (em R$ mil)</li>
+<li><strong>Preço</strong> do produto (em R$);</li>
+<li><strong>Investimento em Marketing</strong> (em R$ mil).</li>
 </ul>
 
 <p>
@@ -63,14 +63,14 @@ O objetivo do estudo é ajustar um modelo de regressão linear múltipla para id
 
 <h2>Por que usar Regressão e não Média Simples?</h2>
 
-<p>Comparar médias isoladas (ex.: média de vendas por nível de preço) não permite:</p>
+<p>Comparar médias isoladas (por exemplo, média de vendas por faixa de preço) não permite:</p>
 
 <ul>
-<li>Separar efeitos (preço e marketing atuam simultaneamente);</li>
-<li>Controlar a influência de uma variável enquanto analisa a outra;</li>
-<li>Medir o impacto marginal de cada variável;</li>
-<li>Realizar previsões quantitativas do tipo “quanto aumenta se…”;</li>
-<li>Avaliar significância estatística das variáveis.</li>
+<li>Separar os efeitos de preço e marketing (ambos atuam ao mesmo tempo);</li>
+<li>Manter uma variável constante enquanto avaliamos a outra;</li>
+<li>Medir o impacto marginal de cada variável (quanto muda a venda para cada unidade de mudança em preço ou marketing);</li>
+<li>Fazer previsões numéricas do tipo “se eu investir X, vendo quanto?”;</li>
+<li>Testar estatisticamente se os efeitos são significativos.</li>
 </ul>
 
 <p>
@@ -78,7 +78,7 @@ A regressão múltipla resolve isso ao modelar a relação linear:
 </p>
 
 <p style="font-size:18px; font-weight:bold;">
-Vendas = β0 + β1·Preço + β2·Marketing
+Vendas = β₀ + β₁·Preço + β₂·Marketing
 </p>
 
 <hr>
@@ -89,7 +89,7 @@ Vendas = β0 + β1·Preço + β2·Marketing
 
 <table>
 <tr>
-<th>ID</th><th>Preço (R$)</th><th>Marketing (R$ mil)</th><th>Vendas</th>
+    <th>ID</th><th>Preço (R$)</th><th>Marketing (R$ mil)</th><th>Vendas (unid.)</th>
 </tr>
 <tr><td>1</td><td>12</td><td>10</td><td>140</td></tr>
 <tr><td>2</td><td>15</td><td>20</td><td>170</td></tr>
@@ -105,123 +105,133 @@ Vendas = β0 + β1·Preço + β2·Marketing
 <tr><td>12</td><td>38</td><td>48</td><td>200</td></tr>
 </table>
 
+<h3>Criação do conjunto de dados no R</h3>
+
+<pre><code>preco &lt;- c(12, 15, 18, 25, 30, 40, 45, 33, 28, 20, 14, 38)
+marketing &lt;- c(10, 20, 15, 30, 35, 50, 45, 25, 22, 40, 12, 48)
+vendas &lt;- c(140, 170, 150, 175, 182, 205, 190, 160, 155, 185, 145, 200)
+
+dados &lt;- data.frame(preco, marketing, vendas)
+dados</code></pre>
+
+<p><strong>Interpretação:</strong> Criamos explicitamente os vetores <code>preco</code>, <code>marketing</code> e <code>vendas</code> com os mesmos valores da tabela, e os reunimos em um <code>data.frame</code> chamado <code>dados</code>, que será usado no ajuste do modelo.</p>
+
 <hr>
 
-<h2>Ajuste do Modelo no R</h2>
+<h2>Ajuste do Modelo de Regressão Múltipla</h2>
 
-<pre><code>
-modelo <- lm(vendas ~ preco + marketing, data=dados)
-summary(modelo)
+<pre><code>modelo &lt;- lm(vendas ~ preco + marketing, data = dados)
+summary(modelo)</code></pre>
+
+<h3>Saída (simulada) para interpretação</h3>
+
+<pre><code>Coefficients:
+              Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   118.32      6.41    18.45   &lt;0.001 ***
+preco          -2.38      0.20   -11.90   &lt;0.001 ***
+marketing       3.10      0.15    20.60   &lt;0.001 ***
 </code></pre>
 
-<h3>Saída Simulada (Interpretada)</h3>
-
-<pre><code>
-Coefficients:
-              Estimate Std.Error t value Pr(>|t|)
-(Intercept)   118.32     6.41     18.45   <0.001 ***
-preco          -2.38     0.20    -11.90   <0.001 ***
-marketing       3.10     0.15     20.60   <0.001 ***
-</code></pre>
-
-<h3>Interpretação</h3>
+<h3>Interpretação dos coeficientes</h3>
 
 <ul>
-<li><strong>Intercepto (118.32):</strong> vendas estimadas quando preço = 0 e marketing = 0 (valor estrutural).</li>
-
-<li><strong>Preço (–2.38):</strong> cada R$ 1 de aumento no preço reduz as vendas em 2,38 unidades, mantido marketing constante.</li>
-
-<li><strong>Marketing (+3.10):</strong> cada R$ 1 mil investido aumenta as vendas em 3,10 unidades.</li>
-
-<li><strong>Ambos p-valores &lt; 0.001:</strong> preço e marketing influenciam fortemente as vendas.</li>
+    <li><strong>(Intercept)</strong> = 118,32: valor esperado de vendas quando preço = 0 e marketing = 0. Não tem interpretação prática direta, mas é necessário para o modelo.</li>
+    <li><strong>Preço</strong> = −2,38: mantendo o marketing fixo, cada aumento de R$ 1 no preço reduz as vendas em aproximadamente 2,38 unidades, em média.</li>
+    <li><strong>Marketing</strong> = +3,10: mantendo o preço fixo, cada aumento de R$ 1 mil em marketing aumenta as vendas em aproximadamente 3,10 unidades, em média.</li>
+    <li><strong>p-valores &lt; 0,001</strong> para ambos: indica que tanto preço quanto marketing são variáveis estatisticamente significativas para explicar as vendas.</li>
 </ul>
 
 <hr>
 
-<h2>Avaliação do Ajuste</h2>
+<h2>Avaliação do Ajuste – R²</h2>
 
-<pre><code>
-summary(modelo)$r.squared
-</code></pre>
+<pre><code>summary(modelo)$r.squared</code></pre>
 
-<p><strong>Saída simulada:</strong></p>
+<p><strong>Saída (simulada):</strong></p>
 
-<pre><code>
-R-squared: 0.94
-</code></pre>
+<pre><code>R-squared: 0.94</code></pre>
 
-<p>O modelo explica cerca de <strong>94% da variação das vendas</strong>, indicando excelente ajuste.</p>
+<p>
+O modelo explica aproximadamente <strong>94%</strong> da variabilidade das vendas.  
+Isso indica um <strong>ótimo ajuste</strong> do modelo aos dados observados.
+</p>
 
 <hr>
 
-<h2>Previsões</h2>
+<h2>Previsão de Novos Cenários</h2>
 
-<pre><code>
-novos <- data.frame(
-    preco = c(20, 30, 40),
-    marketing = c(10, 20, 30)
+<pre><code>novos &lt;- data.frame(
+  preco     = c(20, 30, 40),
+  marketing = c(10, 20, 30)
 )
-predict(modelo, novos)
-</code></pre>
 
-<p><strong>Saída simulada:</strong></p>
+predict(modelo, newdata = novos)</code></pre>
 
-<pre><code>
-145.1
+<p><strong>Saída (simulada):</strong></p>
+
+<pre><code>145.1
 162.5
 179.2
 </code></pre>
+
+<p>
+Esses valores representam as vendas estimadas para diferentes combinações de preço e marketing.
+Isso mostra como a regressão pode ser usada para <strong>planejamento e simulação de cenários</strong>.
+</p>
 
 <hr>
 
 <h2>Conclusão</h2>
 
 <p>
-A regressão múltipla mostrou que:
+A análise de regressão linear múltipla permitiu:
 </p>
 
 <ul>
-<li>Marketing e preço são fortemente relacionados às vendas;</li>
-<li>Marketing tem efeito positivo mais forte que o efeito negativo do preço;</li>
-<li>O modelo tem excelente ajuste (R² = 0.94);</li>
-<li>Permite prever vendas futuras de forma quantitativa.</li>
+    <li>quantificar o efeito do preço (impacto negativo) e do marketing (impacto positivo) sobre as vendas;</li>
+    <li>verificar que ambos os efeitos são estatisticamente significativos;</li>
+    <li>obter um modelo com alto poder explicativo (R² ≈ 0,94);</li>
+    <li>realizar previsões para novos cenários de preço e investimento em marketing.</li>
 </ul>
 
 <p>
-Enquanto a <strong>média simples</strong> compara grupos isolados, a regressão:
+Enquanto a <strong>média simples</strong> só permite comparações gerais, a regressão múltipla:
 </p>
 
 <ul>
-<li>controla efeitos simultâneos;</li>
-<li>mede impacto marginal de cada variável;</li>
-<li>produz previsões numéricas concretas;</li>
-<li>é superior para tomada de decisão empresarial.</li>
+    <li>isola o efeito de cada variável, controlando a outra;</li>
+    <li>fornece coeficientes que indicam o impacto marginal de cada fator;</li>
+    <li>permite prever vendas sob diferentes combinações de preço e marketing;</li>
+    <li>apoia decisões de negócio com base em evidências quantitativas.</li>
 </ul>
 
 <hr>
 
 <h2>Código Completo em R</h2>
 
-<pre><code>
-set.seed(123)
+<pre><code># Criação do conjunto de dados
+preco &lt;- c(12, 15, 18, 25, 30, 40, 45, 33, 28, 20, 14, 38)
+marketing &lt;- c(10, 20, 15, 30, 35, 50, 45, 25, 22, 40, 12, 48)
+vendas &lt;- c(140, 170, 150, 175, 182, 205, 190, 160, 155, 185, 145, 200)
 
-n <- 40
+dados &lt;- data.frame(preco, marketing, vendas)
 
-preco <- runif(n, 10, 50)
-marketing <- runif(n, 5, 50)
-vendas <- 120 - 2.5*preco + 3.2*marketing + rnorm(n, 0, 10)
+# Ajuste do modelo de regressão múltipla
+modelo &lt;- lm(vendas ~ preco + marketing, data = dados)
 
-dados <- data.frame(preco, marketing, vendas)
-
-modelo <- lm(vendas ~ preco + marketing, data=dados)
+# Resumo do modelo
 summary(modelo)
 
-novos <- data.frame(
-    preco = c(20, 30, 40),
-    marketing = c(10, 20, 30)
+# R-quadrado
+summary(modelo)$r.squared
+
+# Previsões para novos cenários
+novos &lt;- data.frame(
+  preco     = c(20, 30, 40),
+  marketing = c(10, 20, 30)
 )
 
-predict(modelo, novos)
+predict(modelo, newdata = novos)
 </code></pre>
 
 </body>
